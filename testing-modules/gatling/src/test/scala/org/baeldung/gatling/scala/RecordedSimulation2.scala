@@ -1,37 +1,19 @@
 package org.baeldung.gatling.scala
 
-import scala.concurrent.duration._
-
-import io.gatling.core.Predef._
-import io.gatling.http.Predef._
-import io.gatling.jdbc.Predef._
+import io.gatling.core.Predef.{details, _}
+import org.baeldung.gatling.scala.ChainRequestsProvider.simpleRequest
+import org.baeldung.gatling.scala.ScenariosProvider.getScenario
 
 class RecordedSimulation2 extends Simulation {
 
-    val httpProtocol = http
-        .baseUrl("http://www.google.com")
-
-    val scn = scenario("RecordedSimulation")
-        .exec(http("request_0")
-            .get("/"))
-        .pause(5)
-        .exec(http("request_1")
-            .get("/"))
-        .pause(4)
-        .exec(http("request_2")
-            .get("/"))
-        .pause(2)
-        .exec(http("request_3")
-            .get("/"))
-        .pause(2)
-        .exec(http("request_4")
-            .get("/"))
-        .pause(1)
-        .exec(http("request_5")
-            .get("/"))
-        .pause(2)
-        .exec(http("request_6")
-            .get("/"))
-
-    setUp(scn.inject(atOnceUsers(1))).protocols(httpProtocol)
+    setUp(
+        getScenario("getExistingEndpoint", simpleRequest("request_status_endpoint", "/health/status", 200), 50, 10, 60),
+        getScenario("nonExistingEndpoint", simpleRequest("request_wrong_endpoint", "/health/status1", 200), 5, 10, 60)
+    ).assertions(
+        details("request_status_endpoint").successfulRequests.percent.gt(99.99),
+        details("request_status_endpoint").responseTime.percentile4.lt(20),
+        details("request_status_endpoint").requestsPerSec.gt(40),
+        details("request_wrong_endpoint").successfulRequests.percent.lt(1),
+        details("request_wrong_endpoint").responseTime.percentile4.lt(20)
+    )
 }
