@@ -6,6 +6,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TES
 import java.util.Arrays;
 import java.util.List;
 
+import com.baeldung.jpa.projection.view.AddressDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
@@ -33,6 +34,16 @@ class JpaProjectionIntegrationTest {
     @Test
     void whenUsingClosedProjections_thenViewWithRequiredPropertiesIsReturned() {
         AddressView addressView = addressRepository.getAddressByState("CA").get(0);
+        assertThat(addressView.getZipCode()).isEqualTo("90001");
+
+        PersonView personView = addressView.getPerson();
+        assertThat(personView.getFirstName()).isEqualTo("John");
+        assertThat(personView.getLastName()).isEqualTo("Doe");
+    }
+
+    @Test
+    void whenUsingCustomQueryForNestedProjection_thenViewWithRequiredPropertiesIsReturned() {
+        AddressView addressView = addressRepository.getViewAddressByState("CA").get(0);
         assertThat(addressView.getZipCode()).isEqualTo("90001");
 
         PersonView personView = addressView.getPerson();
@@ -70,4 +81,17 @@ class JpaProjectionIntegrationTest {
         assertThat(personView.getFirstName()).isEqualTo("John");
         assertThat(personDto.firstName()).isEqualTo("John");
     }
+
+    @Test
+    void whenUsingDTOProjection_thenCorrectResultIsReturned() {
+        List<AddressDto> addresses = addressRepository.findAddressByState("CA");
+
+        AddressDto address = addresses.get(0);
+        assertThat(address.getZipCode()).isEqualTo("90001");
+
+        PersonDto person = address.getPerson();
+        assertThat(person.getFirstName()).isEqualTo("John");
+        assertThat(person.getLastName()).isEqualTo("Doe");
+    }
+
 }
