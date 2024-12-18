@@ -121,6 +121,11 @@
                         <logback.configurationFile>${tutorialsproject.basedir}/${logback.configurationFileName}</logback.configurationFile>
                     </systemPropertyVariables>
                 </configuration>
+		    <configuration>
+    <username>${cargo.remote.username}</username>
+    <password>${cargo.remote.password}</password>
+</configuration>
+
                 <dependencies>
                     <dependency>
                         <groupId>org.junit.jupiter</groupId>
